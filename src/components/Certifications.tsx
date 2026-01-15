@@ -1,36 +1,75 @@
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
-type Certification = {
-  title: string;
-  issuer: string;
-  logo: string;
-  url?: string; // only for Power BI
-};
+// ✅ Import logos from src/assets/logos
+import microsoftLogo from "@/assets/logos/microsoft.svg";
+import googleLogo from "@/assets/logos/google.svg";
+import courseraLogo from "@/assets/logos/coursera.svg";
+import salesforceLogo from "@/assets/logos/salesforce.svg";
 
-const certifications: Certification[] = [
+const certifications = [
   {
     title: "Microsoft Power BI Data Analyst Associate",
     issuer: "Microsoft",
-    logo: "/portfolio/logos/microsoft.svg",
-    url: "https://learn.microsoft.com/api/credentials/share/en-us/YaswanthLalpetVari-0228/C2DAA495379DAE0A?sharingId=97957A899B7B70",
+    logo: microsoftLogo,
+    link: "https://learn.microsoft.com/api/credentials/share/en-us/YaswanthLalpetVari-0228/C2DAA495379DAE0A?sharingId=97957A899B7B70",
   },
   {
     title: "Google Data Analytics",
-    issuer: "Coursera",
-    logo: "/portfolio/logos/google.svg",
+    issuer: "Google",
+    logo: googleLogo,
   },
   {
     title: "Programming for Everybody (Python)",
     issuer: "Coursera",
-    logo: "/portfolio/logos/coursera.svg",
+    logo: courseraLogo,
   },
   {
     title: "Salesforce Certified Administrator",
     issuer: "Salesforce",
-    logo: "/portfolio/logos/salesforce.svg",
+    logo: salesforceLogo,
   },
 ];
+
+// ✅ Animations (Framer Motion Variants)
+const sectionVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: "easeOut" },
+  },
+};
+
+const gridVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.15,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 26, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
+};
+
+const logoVariants = {
+  hidden: { opacity: 0, scale: 0.6, rotate: -8 },
+  show: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: { duration: 0.45, ease: "easeOut" },
+  },
+};
 
 export const Certifications = () => {
   const { ref, inView } = useInView({
@@ -39,65 +78,102 @@ export const Certifications = () => {
   });
 
   return (
-    <section id="certifications" className="py-20">
+    <section id="certifications" className="py-20 relative overflow-hidden">
+      {/* subtle animated glow background */}
+      <motion.div
+        aria-hidden
+        className="absolute -z-10 top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-500/10 blur-3xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={inView ? { opacity: 1, scale: 1 } : {}}
+        transition={{ duration: 0.9 }}
+      />
+
       <div className="container mx-auto px-4">
-        {/* Title */}
+        {/* Whole section animation */}
         <motion.div
           ref={ref}
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
+          variants={sectionVariants}
+          initial="hidden"
+          animate={inView ? "show" : "hidden"}
         >
-          <h2 className="text-3xl md:text-4xl font-bold">
-            <span className="text-gradient">Certifications</span>
-          </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-primary via-accent to-secondary mx-auto rounded-full mt-4" />
-        </motion.div>
+          {/* Title */}
+          <motion.h2
+            className="text-3xl font-bold text-center mb-12"
+            initial={{ opacity: 0, y: 14 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5 }}
+          >
+            Certifications
+          </motion.h2>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {certifications.map((cert, index) => (
-            <motion.div
-              key={cert.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.55, delay: index * 0.12 }}
-              whileHover={{ y: -4 }}
-              className="rounded-xl border border-purple-500/30 bg-background/60 p-6 text-center shadow-lg"
-            >
-              {/* Logo with its own animation */}
-              <motion.img
-                src={cert.logo}
-                alt={`${cert.issuer} logo`}
-                className="mx-auto mb-4 h-12 w-auto object-contain"
-                loading="lazy"
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.45, delay: index * 0.12 + 0.15 }}
-                whileHover={{ scale: 1.1, rotate: 2 }}
-              />
+          {/* Grid */}
+          <motion.div
+            variants={gridVariants}
+            initial="hidden"
+            animate={inView ? "show" : "hidden"}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {certifications.map((cert, index) => {
+              const CardWrapper = cert.link ? motion.a : motion.div;
 
-              <h3 className="text-lg font-semibold">{cert.title}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{cert.issuer}</p>
-
-              {/* Power BI link only */}
-              {cert.url && (
-                <motion.a
-                  href={cert.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-block text-sm text-accent hover:underline"
-                  initial={{ opacity: 0 }}
-                  animate={inView ? { opacity: 1 } : {}}
-                  transition={{ duration: 0.4, delay: index * 0.12 + 0.25 }}
+              return (
+                <CardWrapper
+                  key={index}
+                  {...(cert.link && {
+                    href: cert.link,
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                  })}
+                  variants={cardVariants}
+                  whileHover={{ y: -6, scale: 1.02 }}
+                  whileTap={{ scale: 0.99 }}
+                  transition={{ type: "spring", stiffness: 220, damping: 18 }}
+                  className={`rounded-2xl border border-purple-500/25 bg-background/60 p-6 text-center shadow-lg backdrop-blur ${
+                    cert.link ? "cursor-pointer" : ""
+                  }`}
                 >
-                  View Credential ↗
-                </motion.a>
-              )}
-            </motion.div>
-          ))}
-        </div>
+                  {/* Logo */}
+                  <motion.img
+                    src={cert.logo}
+                    alt={`${cert.issuer} logo`}
+                    className="mx-auto mb-4 h-12 w-auto object-contain"
+                    loading="lazy"
+                    variants={logoVariants}
+                    whileHover={{ rotate: 8, scale: 1.12 }}
+                    transition={{ type: "spring", stiffness: 240, damping: 14 }}
+                  />
+
+                  {/* Title */}
+                  <motion.h3
+                    className="text-lg font-semibold"
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={inView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.35, delay: 0.12 }}
+                  >
+                    {cert.title}
+                  </motion.h3>
+
+                  {/* Issuer */}
+                  <motion.p
+                    className="text-sm text-muted-foreground mt-1"
+                    initial={{ opacity: 0 }}
+                    animate={inView ? { opacity: 1 } : {}}
+                    transition={{ duration: 0.35, delay: 0.18 }}
+                  >
+                    {cert.issuer}
+                  </motion.p>
+
+                  {/* Hint only for Power BI */}
+                  {cert.link && (
+                    <p className="mt-3 text-xs text-purple-400">
+                      View Credential →
+                    </p>
+                  )}
+                </CardWrapper>
+              );
+            })}
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
